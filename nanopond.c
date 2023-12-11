@@ -906,7 +906,7 @@ while (!exitNow) {
                     currentWord = pptr->genome[wordPtr];
                     break;
                 case 0xd: /* KILL: Blow away neighboring cell if allowed with penalty on failure */
-                    tmpptr = getNeighbor(x,y,facing);
+                    tmpptr = getNeighbor(globalx,globaly,facing);
                     if (accessAllowed(tmpptr,reg,0)) {
                         if (tmpptr->generation > 2)
                             ++statCounters.viableCellsKilled;
@@ -927,7 +927,7 @@ while (!exitNow) {
                     }
                     break;
                 case 0xe: /* SHARE: Equalize energy between self and neighbor if allowed */
-                    tmpptr = getNeighbor(x,y,facing);
+                    tmpptr = getNeighbor(globalx,globaly,facing);
                     if (accessAllowed(tmpptr,reg,1)) {
 #ifdef USE_PTHREADS_COUNT
                         pthread_mutex_lock(&(tmpptr->lock));
@@ -965,7 +965,7 @@ while (!exitNow) {
      * would never be executed and then would be replaced with random
      * junk eventually. See the seeding code in the main loop above. */
     if ((outputBuf[0] & 0xff) != 0xff) {
-        tmpptr = getNeighbor(x,y,facing);
+        tmpptr = getNeighbor(globalx,globaly,facing);
 #ifdef USE_PTHREADS_COUNT
         pthread_mutex_lock(&(tmpptr->lock));
 #endif
@@ -989,24 +989,24 @@ while (!exitNow) {
 
     /* Update the neighborhood on SDL screen to show any changes. */
 #ifdef USE_SDL
-    ((uint8_t *)screen->pixels)[x + (y * sdlPitch)] = getColor(pptr);
-    if (x) {
-        ((uint8_t *)screen->pixels)[(x-1) + (y * sdlPitch)] = getColor(&pond[x-1][y]);
+    ((uint8_t *)screen->pixels)[gloablx + (globaly * sdlPitch)] = getColor(pptr);
+    if (globalx) {
+        ((uint8_t *)screen->pixels)[(globalx-1) + (globaly * sdlPitch)] = getColor(&pond[globalx-1][globaly]);
         if (x < (POND_SIZE_X-1))
-            ((uint8_t *)screen->pixels)[(x+1) + (y * sdlPitch)] = getColor(&pond[x+1][y]);
+            ((uint8_t *)screen->pixels)[(globalx+1) + (gloably * sdlPitch)] = getColor(&pond[globalx+1][globaly]);
         else ((uint8_t *)screen->pixels)[y * sdlPitch] = getColor(&pond[0][y]);
     } else {
-        ((uint8_t *)screen->pixels)[(POND_SIZE_X-1) + (y * sdlPitch)] = getColor(&pond[POND_SIZE_X-1][y]);
-        ((uint8_t *)screen->pixels)[1 + (y * sdlPitch)] = getColor(&pond[1][y]);
+        ((uint8_t *)screen->pixels)[(POND_SIZE_X-1) + (globaly * sdlPitch)] = getColor(&pond[POND_SIZE_X-1][globaly]);
+        ((uint8_t *)screen->pixels)[1 + (globaly * sdlPitch)] = getColor(&pond[1][globaly]);
     }
     if (y) {
-        ((uint8_t *)screen->pixels)[x + ((y-1) * sdlPitch)] = getColor(&pond[x][y-1]);
-        if (y < (POND_SIZE_Y-1))
-            ((uint8_t *)screen->pixels)[x + ((y+1) * sdlPitch)] = getColor(&pond[x][y+1]);
+        ((uint8_t *)screen->pixels)[x + ((globaly-1) * sdlPitch)] = getColor(&pond[globalx][globaly-1]);
+        if (globaly < (POND_SIZE_Y-1))
+            ((uint8_t *)screen->pixels)[globalx + ((globaly+1) * sdlPitch)] = getColor(&pond[globalx][globaly+1]);
         else ((uint8_t *)screen->pixels)[x] = getColor(&pond[x][0]);
     } else {
-        ((uint8_t *)screen->pixels)[x + ((POND_SIZE_Y-1) * sdlPitch)] = getColor(&pond[x][POND_SIZE_Y-1]);
-        ((uint8_t *)screen->pixels)[x + sdlPitch] = getColor(&pond[x][1]);
+        ((uint8_t *)screen->pixels)[globalx + ((POND_SIZE_Y-1) * sdlPitch)] = getColor(&pond[globalx][POND_SIZE_Y-1]);
+        ((uint8_t *)screen->pixels)[globalx + sdlPitch] = getColor(&pond[globalx][1]);
     
 #endif /* USE_SDL */
 }
