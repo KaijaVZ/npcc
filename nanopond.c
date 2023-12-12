@@ -344,12 +344,16 @@ struct Partition
 {
     /*Unique identifier for the thread assigned this partition*/
     uint64_t threadNo;
-    /*Where in the pond this partition starts from*/
-    struct Cell** topLeft;
     /*Width of this partition*/
+
+    /* Pointer to cell in the top left of the partitoin */
+    struct Cell** topLeft;
+
+    /* Height of the partition */
+    uint64_t height; 
+
+    /* Width of the partition */
     uint64_t width;
-    /*Height of this partition*/
-    uint64_t height;
 };
 
 /* The pond is a 2D array of cells */
@@ -533,35 +537,6 @@ return &pond[x][y]; /* This should never be reached */
 } 
 
 #ifdef USE_PTHREADS_COUNT
-static inline void makePartitions(uint64_t numThreads, struct Partition *partitionList) {
-    if (numThreads != 4) {
-        printf("Only 4 threaded compiliation is currently implemented\n");
-        return;
-    }
-
-    partitionList[0].topLeft = &pond[0][0];
-    partitionList[0].width = POND_SIZE_X/2;
-    partitionList[0].height = POND_SIZE_Y/2; 
-    partitionList[0].threadNo = 0;
-
-    partitionList[1].topLeft = &pond[POND_SIZE_X/2][0];
-    partitionList[1].width = POND_SIZE_X/2 + POND_SIZE_X%2;
-    partitionList[1].height = POND_SIZE_Y/2;
-    partitionList[1].threadNo = 1;
-
-    partitionList[2].topLeft = &pond[0][POND_SIZE_Y/2];
-    partitionList[2].width = POND_SIZE_X/2;
-    partitionList[2].height = POND_SIZE_Y/2 + POND_SIZE_Y%2;
-    partitionList[2].threadNo = 2;
-
-    partitionList[3].topLeft = &pond[POND_SIZE_X/2][POND_SIZE_Y/2];
-    partitionList[3].width = POND_SIZE_X/2 POND_SIZE_X%2;
-    partitionList[3].height = POND_SIZE_Y/2 + POND_SIZE_Y%2;
-    partitionList[3].threadNo = 3;
-
-
-}
-#ifdef USE_PTHREADS_COUNT
 /*Take a number of threads and divide pond up evenly into that many partitons.
  * Assumes partitionList is numThreads long
  * Currently only implements 4 threads*/
@@ -664,8 +639,6 @@ const uintptr_t threadNo = (uintptr_t)p->threadNo;
 uint64_t width = p->width;
 uint64_t height = p->height;
 struct Cell** topLeft = p->topLeft;
-
-
 uintptr_t x,y,i;
 uintptr_t cycle = 0;
 clock_t start, end;
@@ -1266,10 +1239,10 @@ while ((opt = getopt(argc, argv, "x:y:m:f:v:b:p:c:k:d:ht:")) != -1) {
 		pthread_join(threads[i], (void**)0);
 #else
     struct Partition serialPartition;
-    serialPartition.topLeft = &pond[0][0];
+    serialPartition.threadNo = 0;
+    serialPartition.topLeft = pond;
     serialPartition.width = POND_SIZE_X;
     serialPartition.height = POND_SIZE_Y;
-    serialPartition.threadNo = 0;
 	run(&serialPartition);
 #endif
 
