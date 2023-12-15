@@ -530,13 +530,13 @@ static inline struct Cell *getNeighbor(const uintptr_t x,const uintptr_t y,const
 /* Space is toroidal; it wraps at edges */
 switch(dir) {
     case N_LEFT:
-        return (x) ? &curP->topLeft[x-1][y] : &curP->lNeighbor->topLeft[curP->lNeighbor->width-1][y];
+        return (x) ? &curP->topLeft[x-1][y] : &curP->lneighbor->topLeft[curP->lneighbor->width-1][y];
     case N_RIGHT:
-        return (x < ( curP->width -1)) ? &curP->topLeft[x+1][y] : &curP->rNeighbor->topLeft[0][y];
+        return (x < ( curP->width -1)) ? &curP->topLeft[x+1][y] : &curP->rneighbor->topLeft[0][y];
     case N_UP:
-        return (y) ? &curP->topLeft[x][y-1] : &curP->uNeighbor->topLeft[x][curP->uNeighbor->height-1];
+        return (y) ? &curP->topLeft[x][y-1] : &curP->uneighbor->topLeft[x][curP->uneighbor->height-1];
     case N_DOWN:
-        return (y < (curP->height -1)) ? &curP->topLeft[x][y+1] : &curP->dNeighbor->topLeft[x][0];
+        return (y < (curP->height -1)) ? &curP->topLeft[x][y+1] : &curP->dneighbor->topLeft[x][0];
 }
 return &curP->topLeft[x][y]; /* This should never be reached */
 }
@@ -761,7 +761,9 @@ volatile int exitNow = 0;
 
 /** Add a thread whose sole purpose is to do the reporting */
 static void *runReporting(){ 
+    printf("we are in run reporting");
     while (!exitNow) {
+        printf("here david");
         uint8_t allDone = numThreads;
         while(allDone>0){
             allDone = numThreads;
@@ -780,6 +782,7 @@ static void *runReporting(){
                     }
                 }
          }
+        
         doReport(globalcycle);
     }
 
@@ -896,7 +899,7 @@ while (!exitNow) {
         /** all threads finished if we've gotten to here*/
 
         //copy memory next
-       
+        copyMem(p); 
 
         threadComplete[threadNo] = 0;
     }
