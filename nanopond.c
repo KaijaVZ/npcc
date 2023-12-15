@@ -567,6 +567,8 @@ static inline int makePartitions(struct Partition *partitionList) {
     partitionList[0].rneighbor = &partitionList[0];
     partitionList[0].uneighbor = &partitionList[0];
     partitionList[0].dneighbor = &partitionList[0];
+    
+
 
     //Allocate memory in the same way as pond
     for(uintptr_t i = 0; i < POND_SIZE_X; i++){
@@ -576,7 +578,11 @@ static inline int makePartitions(struct Partition *partitionList) {
         for(uintptr_t j = 0; j < POND_SIZE_Y; j++){
             partitionList[0].topLeft[i][j].genome = (uintptr_t*)calloc(POND_DEPTH_SYSWORDS, sizeof(uintptr_t));
         }
+    
     }
+
+    printf("%p \n", &(partitionList[0].topLeft[0][0].genome[0]));
+
     listLen=1;
     #else
     //Multithreaded partition setup
@@ -627,7 +633,7 @@ static inline int makePartitions(struct Partition *partitionList) {
             }
             
         }
-
+    
         
     }
     listLen = USE_PTHREADS_COUNT;
@@ -756,6 +762,7 @@ volatile int exitNow = 0;
 
 /** Add a thread whose sole purpose is to do the reporting */
 static void *runReporting(){ 
+    printf("we are in runReproting \n");
 #ifdef USE_PTHREADS_COUNT
     const uint64_t numThreads = USE_PTHREADS_COUNT;
 #else
@@ -768,15 +775,19 @@ static void *runReporting(){
             //spinning wheels
             sem_getvalue(&workdone,&result);
         }
+        printf("1st while is done \n");
         //workdone=0;//?
-        for (uint64_t i; i<numThreads;i++) sem_wait(&workdone);
+        for (uint64_t i =0; i<numThreads;i++) sem_wait(&workdone);
 
         sem_getvalue(&memcopied,&result);
+        printf("ARE YOU GETTING HERE \n");
         while (result!=numThreads) {
             sem_getvalue(&memcopied,&result);
         }
+
+        printf("2nd while is done \n");
         //memcopied=0;
-        for (uint64_t i; i<numThreads;i++) sem_wait(&memcopied);
+        for (uint64_t i =0; i<numThreads;i++) sem_wait(&memcopied);
         doReport(globalcycle);
     
     }
@@ -824,6 +835,7 @@ uint64_t width = p->width;
 uint64_t height = p->height;
 struct Cell** topLeft = p->topLeft;
 
+printf("%p \n", &(p->topLeft[0][0].genome[0]));
 
 uintptr_t x,y,i;
 uintptr_t cycle = 0;
@@ -900,8 +912,8 @@ while (!exitNow) {
     if (!(cycle % INFLOW_FREQUENCY)) {
         x = getRandom() % width;
         y = getRandom() % height;
-        uintptr_t globals[2];
-        globalCoord(x,y,threadNo,globals);
+        //uintptr_t globals[2];
+       // globalCoord(x,y,threadNo,globals);
         //uintptr_t globalx = globals[0];
         //uintptr_t globaly = globals[1];
 
@@ -969,6 +981,9 @@ while (!exitNow) {
      * inner loop. We have to be careful to refresh this
      * whenever it might have changed... take a look at
      * the code. :) */
+    
+    printf("%p \n", &(pptr->genome[0]));
+
     currentWord = pptr->genome[0];
 
     /* Keep track of how many cells have been executed */
